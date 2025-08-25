@@ -1,0 +1,18 @@
+name1 = input("What is your name? ")
+name2 = input("What's the name of your loved one? ")
+
+def calculate_love_score(name1, name2):
+    true = ["T", "R", "U", "E"]
+    love = ["L", "O", "V", "E"]
+    score_true = 0
+    score_love = 0
+
+
+    for letter in (name1+name2).upper():
+        if letter in true:
+            score_true += 1
+        if letter in love:
+            score_love += 1
+    print(f"Your love score is: {score_true}{score_love}.")
+
+calculate_love_score(name1, name2)
