@@ -1,0 +1,117 @@
+from tkinter import *
+import math
+
+# CONSTANTS
+PURPLE = "#696FC7"
+LIGHT_PURPLE = "#A7AAE1"
+YELLOW = "#F3E2D4"
+PINK = "#F2AEBB"
+FONT = "Courier"
+# WORK_SEC = 2
+# SHORT_BREAK_SEC = 2
+LONG_BREAK_SEC= 5
+reps = 0
+timer = None
+sessions =0
+circuits = 0
+
+# Reset set up
+def reset():
+    global sessions, circuits, reps
+    sessions = 0
+    exercises_count.config(text="")
+    circuits = 0
+    circuit_count.config(text="")
+    reps = 0
+    window.after_cancel(timer)
+    canvas.itemconfig(timer_text, text="00:00")
+    timer_label.config(text="Timer", fg=PINK)
+
+# Start set up
+def start_timer():
+    global reps
+    reps += 1
+
+    def get_int(entry, default):
+        try:
+            val = int(entry.get())
+            return max(1, val) #just in case entry is <0, minimum is 1sec
+        except ValueError:
+            return default
+
+    wt = get_int(work_time, 30)
+    bt = get_int(break_time, 15)
+
+    if reps % 10 == 0:
+        count_down(LONG_BREAK_SEC)
+        timer_label.config(text="---Long break---", fg= LIGHT_PURPLE)
+    elif reps % 2 == 0:
+        count_down(bt)
+        timer_label.config(text="---Short break---", fg= LIGHT_PURPLE)
+    elif reps % 2 == 1:
+        count_down(wt)
+        timer_label.config(text="!!!!Sweaty time!!!!", fg=PURPLE)
+
+# Countdown set up
+def count_down(count):
+    global timer, sessions, circuits
+    second_count = count
+    if count <10:
+        second_count = f"0{second_count}"
+    # what will be displayed in timer_text (we only do secs):
+    canvas.itemconfig(timer_text, text=f"00:{second_count}")
+    if count >0:
+        timer = window.after(1000, count_down, count - 1)
+    else:
+        if reps % 2 ==1: # czyli przerwy
+            sessions += 1
+            exercises_count.config(text="✔" * sessions)
+        if reps % 10 == 0:  # skończyła się długa przerwa
+            sessions = 0
+            exercises_count.config(text="")
+            circuits += 1
+            circuit_count.config(text="✔" * circuits)
+
+        start_timer()
+
+# GUI set up
+window = Tk()
+window.title("Workout Tracer")
+window.config(padx=80,pady=50, bg="white", highlightthickness=0)
+
+canvas = Canvas(width=700, height=700, bg="white", highlightthickness=0)
+work_image = PhotoImage(file="image2.png")
+canvas.create_image(350,350, image=work_image)
+timer_text = canvas.create_text(350,50, text="00:00", font=(FONT,50,"bold"))
+canvas.grid(column=2, row=3)
+
+# Labels
+timer_label = Label(text="Timer", font=(FONT,60), fg=PINK, bg="white")
+timer_label.grid(column=2, row=4)
+exercises_label = Label(text="Exercises: ", font=(FONT,30), fg=PINK, bg="white")
+exercises_label.grid(column=0, row =0)
+exercises_count = Label(text="", font=(FONT,30), fg=PINK, bg="white", width=5, anchor= "w")
+exercises_count.grid(column=1, row =0)
+circuit_label = Label(text="  Circuit: ", font=(FONT,30), fg=PINK, bg="white")
+circuit_label.grid(column=0, row =1)
+circuit_count = Label(text=" ", font=(FONT,30), fg=PINK, bg="white", width=5, anchor = "w")
+circuit_count.grid(column=1, row =1)
+
+
+# Buttons
+start_button = Button(text="Start", command=start_timer)
+start_button.grid(column=3, row=0)
+reset_button = Button(text="Reset", command=reset)
+reset_button.grid(column=3, row=1)
+
+# Entries and their Labels
+work_time_label = Label(text=" Work time: ", font=(FONT,30), fg=YELLOW, bg="white")
+work_time_label.grid(column=0, row=4)
+work_time = Entry(width=4)
+work_time.grid(column=1, row=4)
+break_time_label = Label(text="Break time: ", font=(FONT,30), fg=YELLOW, bg="white")
+break_time_label.grid(column=0, row=5)
+break_time = Entry(width=4)
+break_time.grid(column=1, row=5)
+
+window.mainloop()
